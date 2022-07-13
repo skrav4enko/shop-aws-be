@@ -8,11 +8,13 @@ export default {
       http: {
         method: "post",
         path: "hello",
+        cors: true,
         request: {
           schemas: {
             "application/json": schema,
           },
         },
+        bodyType: "helloPostBody",
       },
     },
   ],
