@@ -1,6 +1,8 @@
-export const mockData = [
+import { Product } from "@services/product.interface";
+
+export const mockProducts: Product[] = [
   {
-    count: 4,
+    count: 44,
     description: "Short Product Description1",
     id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
     price: 2.4,

@@ -56,9 +56,9 @@
     },
     "/products/{productId}": {
       "get": {
-        "summary": "getProductsById",
+        "summary": "getProductById",
         "description": "",
-        "operationId": "getProductsById.get.products/{productId}",
+        "operationId": "getProductById.get.products/{productId}",
         "consumes": [
           "application/json"
         ],
@@ -98,6 +98,5 @@
     }
   },
   "securityDefinitions": {},
-  "basePath": "/dev",
-  "host": "f5xgz64e47.execute-api.eu-west-1.amazonaws.com"
+  "basePath": "/dev"
 };
