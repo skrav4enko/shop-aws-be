@@ -3,6 +3,7 @@ import type { AWS } from "@serverless/typescript";
 import hello from "@functions/hello";
 import getProductsList from "@functions/getProductsList";
 import getProductById from "@functions/getProductById";
+import createProduct from "@functions/createProduct";
 
 const serverlessConfiguration: AWS = {
   service: "product-service",
@@ -29,14 +30,14 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { hello, getProductsList, getProductById },
+  functions: { hello, getProductsList, getProductById, createProduct },
   package: { individually: true },
   custom: {
     esbuild: {
       bundle: true,
       minify: false,
       sourcemap: true,
-      exclude: ["aws-sdk"],
+      exclude: ["aws-sdk", "pg-native"],
       target: "node14",
       define: { "require.resolve": undefined },
       platform: "node",
