@@ -1,4 +1,5 @@
 import { Pool, PoolClient, PoolConfig } from "pg";
+import { logger } from "src/utils/logger";
 
 const { PG_HOST, PG_PORT, PG_DATABASE, PG_USERNAME, PG_PASSWORD } = process.env;
 
@@ -16,8 +17,8 @@ const pgOptions: PoolConfig = {
 
 const pool = new Pool(pgOptions);
 
-pool.on("error", (err) => {
-  console.error("Unexpected error on idle client", err);
+pool.on("error", (error) => {
+  logger.error(JSON.stringify({ message: "Unexpected error on idle client", error }));
 });
 
 export async function dbClientQuery<T>(query: string, values?: any[]) {
@@ -30,7 +31,7 @@ export async function dbClientQuery<T>(query: string, values?: any[]) {
 
     return res;
   } catch (err) {
-    console.error(`Postgres Error:`, err.message, err.stack);
+    logger.error(JSON.stringify({ message: `Postgres Error: ${err.message}`, stack: err.stack }));
 
     throw new Error(`Postgres failed: ${err.message}`);
   } finally {
@@ -50,7 +51,7 @@ export async function dbClientTransaction<T>(transactionQueriesFn: (client: Pool
 
     return res;
   } catch (err) {
-    console.error(`Postgres Error:`, err.message, err.stack);
+    logger.error(JSON.stringify({ message: `Postgres Error: ${err.message}`, stack: err.stack }));
 
     await client.query("ROLLBACK");
 
