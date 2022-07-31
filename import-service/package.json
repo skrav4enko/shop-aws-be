@@ -8,17 +8,20 @@
     "deploy": "sls deploy",
     "remove": "sls remove",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "s3local:event": "aws --endpoint http://localhost:4567 s3 cp ./src/data/test.csv s3://product-catalogue/uploaded/test.csv --profile s3local"
   },
   "engines": {
     "node": ">=14.15.0"
   },
   "dependencies": {
     "@middy/core": "^2.5.3",
+    "@middy/event-normalizer": "^3.1.0",
     "@middy/http-cors": "^3.1.0",
     "@middy/http-json-body-parser": "^2.5.3",
     "csv-parse": "^5.3.0",
-    "http-status-codes": "^2.2.0"
+    "http-status-codes": "^2.2.0",
+    "winston": "^3.8.1"
   },
   "devDependencies": {
     "@serverless/typescript": "^3.0.0",
