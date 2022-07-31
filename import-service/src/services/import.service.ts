@@ -3,6 +3,7 @@ import { parse } from "csv-parse";
 
 import { config } from "src/config";
 import * as s3 from "src/services/s3.service";
+import * as sqs from "src/services/sqs.service";
 import { logger } from "src/utils/logger";
 
 export async function importProductsFile(fileName: string): Promise<string> {
@@ -25,8 +26,20 @@ export async function parseProductsFile(fileName: string): Promise<void> {
   });
 
   // Use the readable stream api to consume records
-  const csvParserStream = parse().on("data", (chunk) => {
-    logger.log(JSON.stringify({ message: "CSV Line", chunk }));
+  const csvParserStream = parse().on("data", (product) => {
+    logger.log(JSON.stringify({ message: "CSV Line", product }));
+
+    sqs
+      .sendSQSMessage({
+        QueueUrl: process.env.SQS_QUEUE_URL,
+        MessageBody: JSON.stringify(product),
+      })
+      .then(() => {
+        logger.log(JSON.stringify({ message: "Product successfully sent to SQS", product }));
+      })
+      .catch((error) => {
+        logger.error(JSON.stringify({ message: "Product delivery to SQS failed with error", error, product }));
+      });
   });
 
   await new Promise((resolve, reject) => {
