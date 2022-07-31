@@ -52,6 +52,33 @@
             "description": "200 response"
           }
         }
+      },
+      "post": {
+        "summary": "createProduct",
+        "description": "",
+        "operationId": "createProduct.post.products",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Body required in the request",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/productPostBody"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response"
+          }
+        }
       }
     },
     "/products/{productId}": {
@@ -95,6 +122,9 @@
       "additionalProperties": false,
       "title": "helloPostBody",
       "type": "object"
+    },
+    "productPostBody": {
+      "title": "productPostBody"
     }
   },
   "securityDefinitions": {},

@@ -1,22 +1,26 @@
-import { StatusCodes, ReasonPhrases } from "http-status-codes";
+import { ReasonPhrases, StatusCodes } from "http-status-codes";
 import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/api-gateway";
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { AppCustomError } from "@libs/app-custom-error";
 
+import { Product, ProductServiceInterface } from "@services/product.interface";
 import { getProductService } from "@services/get-product-service";
-import { ProductServiceInterface } from "@services/product.interface";
-import schema from "./schema";
 import { logger } from "src/utils/logger";
+import schema from "./schema";
 
 export const createHandler = (productService: ProductServiceInterface) => {
-  const getProductsList: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+  const createProduct: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (event) => {
+    const productData = event.body as Omit<Product, "id">;
+
     try {
-      logger.log(JSON.stringify({ message: "Fetching products", event }));
+      logger.log(JSON.stringify({ message: `Creating Product`, productData, event }));
 
-      const products = await productService.getProductsList();
+      const createdProduct = await productService.createProduct(productData);
 
-      return formatJSONResponse({ success: true, data: products });
+      logger.log(JSON.stringify({ message: `Product has been created`, createdProduct }));
+
+      return formatJSONResponse({ success: true, data: createdProduct });
     } catch (error) {
       if (error instanceof AppCustomError) {
         const { message, statusCode } = error;
@@ -32,7 +36,7 @@ export const createHandler = (productService: ProductServiceInterface) => {
     }
   };
 
-  return getProductsList;
+  return createProduct;
 };
 
 export const main = middyfy(createHandler(getProductService()));
