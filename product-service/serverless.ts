@@ -4,6 +4,9 @@ import hello from "@functions/hello";
 import getProductsList from "@functions/getProductsList";
 import getProductById from "@functions/getProductById";
 import createProduct from "@functions/createProduct";
+import catalogBatchProcess from "@functions/catalogBatchProcess";
+
+const SNS_TOPIC_NAME = "createProductTopic";
 
 const serverlessConfiguration: AWS = {
   service: "product-service",
@@ -19,6 +22,24 @@ const serverlessConfiguration: AWS = {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
     },
+    iam: {
+      role: {
+        statements: [
+          {
+            Effect: "Allow",
+            Action: "sns:*",
+            Resource: {
+              Ref: "SNSTopic",
+            },
+          },
+          {
+            Effect: "Allow",
+            Action: "sqs:*",
+            Resource: "${cf:import-service-${self:provider.stage}.SQSQueueArn}",
+          },
+        ],
+      },
+    },
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
@@ -27,11 +48,46 @@ const serverlessConfiguration: AWS = {
       PG_DATABASE: "shop_aws_db",
       PG_USERNAME: "postgres",
       PG_PASSWORD: "${env:PG_PASSWORD}",
+      SNS_TOPIC_ARN: {
+        Ref: "SNSTopic",
+      },
     },
   },
   // import the function via paths
-  functions: { hello, getProductsList, getProductById, createProduct },
+  functions: { hello, getProductsList, getProductById, createProduct, catalogBatchProcess },
   package: { individually: true },
+  resources: {
+    Resources: {
+      SNSTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          TopicName: SNS_TOPIC_NAME,
+        },
+      },
+      SNSCheapBooksSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "${env:SNS_EMAIL_SUB_1}",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "SNSTopic",
+          },
+          FilterPolicy: '{"price": [{"numeric": ["<", 10]}]}',
+        },
+      },
+      SNSExpensiveBooksSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "${env:SNS_EMAIL_SUB_2}",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "SNSTopic",
+          },
+          FilterPolicy: '{"price": [{"numeric": [">=", 10]}]}',
+        },
+      },
+    },
+  },
   custom: {
     esbuild: {
       bundle: true,

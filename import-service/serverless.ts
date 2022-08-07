@@ -10,6 +10,8 @@ const S3_BUCKET_NAME = "cloud-aws-import-products";
 const UPLOADED_PATH = "uploaded";
 const PARSED_PATH = "parsed";
 
+const SQS_QUEUE_NAME = "catalogItemsQueue";
+
 const serverlessConfiguration: AWS = {
   service: "import-service",
   frameworkVersion: "3",
@@ -49,6 +51,13 @@ const serverlessConfiguration: AWS = {
             Action: ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
             Resource: `arn:aws:s3:::${S3_BUCKET_NAME}/*`,
           },
+          {
+            Effect: "Allow",
+            Action: "sqs:*",
+            Resource: {
+              "Fn::GetAtt": ["SQSQueue", "Arn"],
+            },
+          },
         ],
       },
     },
@@ -56,6 +65,28 @@ const serverlessConfiguration: AWS = {
   // import the function via paths
   functions: { importProductsFile, importFileParser },
   package: { individually: true },
+  resources: {
+    Resources: {
+      SQSQueue: {
+        Type: "AWS::SQS::Queue",
+        Properties: {
+          QueueName: SQS_QUEUE_NAME,
+        },
+      },
+    },
+    Outputs: {
+      SQSQueueUrl: {
+        Value: {
+          Ref: "SQSQueue",
+        },
+      },
+      SQSQueueArn: {
+        Value: {
+          "Fn::GetAtt": ["SQSQueue", "Arn"],
+        },
+      },
+    },
+  },
   custom: {
     esbuild: {
       bundle: true,
