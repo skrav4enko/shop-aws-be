@@ -1,6 +1,6 @@
 import type { AWS } from "@serverless/typescript";
 
-import hello from "@functions/hello";
+import basicAuthorizer from "@functions/basic-authorizer";
 
 const serverlessConfiguration: AWS = {
   service: "authorization-service",
@@ -22,7 +22,17 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { hello },
+  functions: { basicAuthorizer },
+  resources: {
+    Resources: {},
+    Outputs: {
+      BasicAuthorizerArn: {
+        Value: {
+          "Fn::GetAtt": ["BasicAuthorizerLambdaFunction", "Arn"],
+        },
+      },
+    },
+  },
   package: { individually: true },
   custom: {
     esbuild: {
